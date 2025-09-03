@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính tuổi + Tính số tiền còn lại</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #eef2f6;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-size: 2em;
+            font-weight: 600;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 800px;
+        }
+        .section {
+            display: flex;
+            flex-direction: column;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .label {
+            width: 140px;
+            font-weight: 600;
+            color: #34495e;
+            font-size: 1.05em;
+        }
+        .result-label {
+            width: 140px;
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        input, .result-box {
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            width: calc(100% - 140px - 24px);
+            box-sizing: border-box;
+            text-align: right;
+            font-size: 1.05em;
+            color: #333;
+            transition: all 0.2s ease-in-out;
+        }
+        input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+        .result-box {
+            background-color: #f8f9fa;
+            font-weight: 700;
+            color: #2c3e50;
+            border: 1px solid #e0e6ed;
+            cursor: default;
+        }
+
+        /* Màu sắc theo yêu cầu */
+        .yellow-bg { background-color: #fffacd; }
+        .brown-bg { background-color: #a0522d; color: white; }
+        .blue-bg { background-color: #6daee2; }
+        .gray-bg { background-color: #7f8c8d; color: white; }
+        .red-bg { background-color: #dc3545; color: white; }
+
+        /* Điều chỉnh cho hàng số tiền cọc để trải dài 2 cột */
+        .deposit-row {
+            grid-column: span 2;
+            justify-content: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .deposit-row .label, .deposit-row input {
+            width: 250px;
+        }
+        .deposit-row .label { text-align: right; margin-right: 20px; }
+
+        .download-btn {
+            margin-top: 30px;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
+        }
+        .download-btn:hover {
+            background-color: #218838;
+        }
+
+        .error-message {
+            color: white;
+            background-color: #dc3545;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+            grid-column: span 2;
+            justify-self: center;
+        }
+        
+        /* CSS MỚI ĐỂ CHUYỂN TỔNG TIỀN ĐÃ TIÊM VÀO CỘT BÊN TRÁI */
+        .section.left-section .row:last-child {
+            margin-top: 20px;
+            border-top: 1px dashed #e0e0e0;
+            padding-top: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+            .deposit-row {
+                grid-column: span 1;
+                flex-direction: column;
+                align-items: flex-start;
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+            .deposit-row .label {
+                width: 100%;
+                text-align: left;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            .deposit-row input {
+                width: 100%;
+            }
+            .label, .result-label {
+                width: 120px;
+            }
+            input, .result-box {
+                width: calc(100% - 120px - 24px);
+            }
+            .error-message {
+                grid-column: span 1;
+            }
+        }
+    
+
+
+/* ===== AGE CALCULATOR STYLES (Blue Gradient Modern — Enhanced) ===== */
+.age-wrap { width: 100%; box-sizing: border-box; margin-top: 24px; }
+.age-card {
+  background: #fff;
+  border-radius: 20px;              /* stronger rounding */
+  box-shadow: 0 10px 28px rgba(0,0,0,.10);
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.age-card:hover {
+  box-shadow: 0 14px 36px rgba(0,0,0,.12);
+  transform: translateY(-1px);
+}
+.age-wrap h2 {
+  background: linear-gradient(90deg, #2b7cff, #00c6ff);
+  color: #fff;
+  padding: 16px;
+  border-radius: 18px;              /* stronger rounding */
+  text-align: center;
+  margin: 0 0 16px;
+}
+.age-row { display: flex; gap: 14px; flex-wrap: nowrap; align-items: flex-end; width: 100%; }
+.age-field { display: grid; gap: 8px; flex: 1; min-width: 120px; }
+.age-field label { font-size: 14px; color: #004080; font-weight: 600; white-space: nowrap; }
+.age-field input[type="date"], .age-field input[readonly] {
+  width: 100%; box-sizing: border-box; border: 1px solid #cfe2ff;
+  border-radius: 14px;              /* stronger rounding */
+  padding: 12px 14px;               /* slightly larger, friendlier */
+  font-size: 15px; background: #fff; outline: none;
+  transition: border-color .2s, box-shadow .2s, transform .12s ease;
+}
+.age-field input[type="date"]:hover {
+  border-color: #66a3ff;
+  box-shadow: 0 0 0 3px rgba(43,124,255,.10);
+}
+.age-field input[type="date"]:focus {
+  border-color: #2b7cff; box-shadow: 0 0 0 4px rgba(43,124,255,.18);
+}
+.age-field input[readonly] {
+  background: #f7f8fc; font-weight: 600; color: #222; border-color: #e2e6ef;
+}
+/* Hover effect for result boxes */
+.age-field input[readonly]:hover {
+  border-color: #b6ccff;
+  box-shadow: 0 4px 12px rgba(43,124,255,.12);
+  transform: translateY(-1px);
+}
+/* Focusable for accessibility if tab-index is added later */
+.age-field input[readonly]:focus {
+  border-color: #2b7cff;
+  box-shadow: 0 0 0 4px rgba(43,124,255,.18);
+}
+.age-field.age-dob { flex: 0 0 180px; }
+.age-note { margin: 12px 2px 0; color: #666; font-size: 13px; text-align: center; }
+/* ===== /AGE CALCULATOR STYLES ===== */
+
+
+
+
+.result-box {
+    width: 400px !important;
+    flex: 0 0 400px !important;
+}
+
+</style>
+<style>
+
+/* ===== FULL-WIDTH OVERRIDES (Money + Age) ===== */
+html, body { width: 100%; margin: 0; }
+[class*="wrap"] {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+[class*="container"] {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+[class*="card"] {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+/* Ensure top-level layout rows stretch */
+.row, .age-row {
+  width: 100% !important;
+}
+/* ===== /FULL-WIDTH OVERRIDES ===== */
+
+</style>
+<style>
+
+/* ===== MONEY CALCULATOR TITLE STYLE (match age) ===== */
+.money-wrap h2, .money-section h2, .wrap h2 {
+  background: linear-gradient(90deg, #2b7cff, #00c6ff);
+  color: #fff !important;
+  padding: 16px;
+  border-radius: 18px;
+  text-align: center;
+  margin: 0 0 16px;
+  letter-spacing: 0.2px;
+}
+/* ===== /MONEY CALCULATOR TITLE STYLE ===== */
+
+</style>
+<style>
+/* ===== MONEY CALCULATOR TITLE FORCE STYLE ===== */
+h2, .money-title {
+  background: linear-gradient(90deg, #2b7cff, #00c6ff) !important;
+  color: #fff !important;
+  padding: 16px !important;
+  border-radius: 18px !important;
+  text-align: center !important;
+  margin: 0 0 16px !important;
+  letter-spacing: 0.2px !important;
+}
+/* ===== /MONEY CALCULATOR TITLE FORCE STYLE ===== */
+</style>
+<style>
+/* ===== MONEY CALCULATOR TITLE FULL-WIDTH BANNER ===== */
+.money-title, h2 {
+  display: block;
+  width: 100% !important;
+  background: linear-gradient(90deg, #2b7cff, #00c6ff);
+  color: #fff !important;
+  padding: 20px !important;
+  border-radius: 0 !important;
+  text-align: center !important;
+  margin: 0 0 20px !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px !important;
+}
+/* ===== /MONEY CALCULATOR TITLE FULL-WIDTH BANNER ===== */
+</style>
+<style>
+/* ===== MONEY CALCULATOR TITLE TRUE FULL-WIDTH BANNER ===== */
+.money-title, h2 {
+  display: block;
+  width: 100%;
+  background: linear-gradient(90deg, #2b7cff, #00c6ff);
+  color: #fff !important;
+  padding: 30px 0 !important;  /* top/bottom padding only */
+  text-align: center !important;
+  margin: 0 0 20px !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  border-radius: 0 !important; /* remove rounded corners */
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+/* ===== /MONEY CALCULATOR TITLE TRUE FULL-WIDTH BANNER ===== */
+</style>
+<style>
+/* ===== FULL-WIDTH BANNER EDGE FIX ===== */
+.banner-title {
+  width: 100vw !important;
+  margin-left: calc(-50vw + 50%) !important;
+  background: linear-gradient(90deg, #2b7cff, #00c6ff);
+  color: #fff !important;
+  padding: 30px 0 !important;
+  text-align: center !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+/* ===== /FULL-WIDTH BANNER EDGE FIX ===== */
+</style>
+<style>
+/* ===== SECTION TITLES (Container-aligned, equal edges) ===== */
+.section-title {
+  display: block;
+  width: 100% !important;
+  background: linear-gradient(90deg, #2b7cff, #00c6ff) !important;
+  color: #fff !important;
+  padding: 16px !important;
+  border-radius: 18px !important;
+  text-align: center !important;
+  margin: 0 0 16px !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  letter-spacing: .2px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.10);
+}
+/* Undo previous 100vw hack if present */
+.banner-title { width: auto !important; margin-left: 0 !important; }
+/* ===== /SECTION TITLES ===== */
+</style>
+<style>
+/* ===== SECTION TITLES — PILL INSIDE CONTAINER (FINAL) ===== */
+/* Neutralize accidental global rules */
+h2 { background: transparent !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+.money-title, .banner-title { background: transparent !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; width: auto !important; margin: 0 !important; color: inherit !important; }
+/* Correct style applied ONLY to our two section headers */
+.section-title {
+  display: block;
+  width: 100%;
+  background: linear-gradient(90deg, #2b7cff, #00c6ff);
+  color: #fff;
+  padding: 20px 24px;           /* room inside the pill */
+  text-align: center;
+  margin: 0 0 18px;
+  font-size: 26px;
+  font-weight: 700;
+  border-radius: 26px;          /* pill ends */
+  box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  line-height: 1.25;
+}
+/* Keep container side padding controlling the left/right edges */
+.wrap, .age-wrap, .money-wrap, .container, [class*="wrap"] {
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+/* ===== /SECTION TITLES ===== */
+</style>
+<style>
+/* ===== SYNC TITLES STYLE ===== */
+.section-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  padding: 24px !important;
+  border-radius: 28px !important;
+  line-height: 1.3 !important;
+}
+/* ===== /SYNC TITLES STYLE ===== */
+</style>
+<style>
+/* ===== SMALLER TITLES STYLE ===== */
+.section-title {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  padding: 18px !important;
+  border-radius: 20px !important;
+  line-height: 1.25 !important;
+}
+/* ===== /SMALLER TITLES STYLE ===== */
+</style>
+<style>
+/* ===== Modal Styles ===== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0; top: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+}
+.modal-content {
+  background: #fff;
+  margin: 15% auto;
+  padding: 20px;
+  border-radius: 12px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,.2);
+}
+.modal-content p {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #d00;
+}
+.modal-content button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg,#2b7cff,#00c6ff);
+  color: #fff;
+  cursor: pointer;
+}
+.modal-content button:hover {
+  opacity: 0.9;
+}
+/* ===== /Modal Styles ===== */
+</style>
+</head>
+<body>
+
+  <!-- ====== AGE CALCULATOR (FULL-WIDTH) ====== -->
+  <div class="age-wrap">
+    <h2 class="section-title">Tính Tuổi</h2>
+    <div class="age-card">
+      <div class="age-row">
+        <div class="age-field age-dob">
+          <label for="dob">Ngày sinh</label>
+          <input id="dob" type="date" placeholder="Chọn…" />
+        </div>
+        <div class="age-field">
+          <label for="ageDays">Ngày tuổi</label>
+          <input id="ageDays" readonly placeholder="—" />
+        </div>
+        <div class="age-field">
+          <label for="ageWeeks">Tuần tuổi</label>
+          <input id="ageWeeks" readonly placeholder="—" />
+        </div>
+        <div class="age-field">
+          <label for="ageMonths">Tháng tuổi</label>
+          <input id="ageMonths" readonly placeholder="—" />
+        </div>
+        <div class="age-field">
+          <label for="ageYears">Năm tuổi</label>
+          <input id="ageYears" readonly placeholder="—" />
+        </div>
+      </div>
+      <p class="age-note">Kết quả tính dựa theo ngày hiện tại của thiết bị.</p>
+    </div>
+  </div>
+  <!-- ====== /AGE CALCULATOR ====== -->
+
+
+    <h2 class="section-title">Tính số tiền còn lại trong gói</h2>
+
+    <div class="container">
+        <div class="row deposit-row">
+            <div class="label">Số tiền cọc ban đầu</div>
+            <input type="text" id="depositAmount" value="15000000" class="yellow-bg" oninput="formatNumber(this); calculate()">
+        </div>
+
+        <div class="section left-section">
+            <div class="row">
+                <div class="label" style="width: 100%; margin-bottom: 10px; font-size: 1.15em; color: #2980b9;">Số tiền các mũi đã tiêm</div>
+            </div>
+            <div class="row"><input type="text" class="injected-item" value="1953000" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="injected-item" value="825000" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="injected-item" value="996000" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="injected-item" value="1190000" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="injected-item" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="injected-item" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="injected-item" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="injected-item" oninput="formatNumber(this); calculate()"></div>
+            
+            <div class="row">
+                <div class="result-label">Tổng tiền đã tiêm</div>
+                <div class="result-box brown-bg" id="totalInjected">0</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="row">
+                <div class="label" style="width: 100%; margin-bottom: 10px; font-size: 1.15em; color: #2980b9;">Số tiền các mũi tiêm hôm nay</div>
+            </div>
+            <div class="row"><input type="text" class="today-item" value="1132740" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="today-item" value="1439640" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="today-item" value="920700" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="today-item" oninput="formatNumber(this); calculate()"></div>
+            <div class="row"><input type="text" class="today-item" oninput="formatNumber(this); calculate()"></div>
+            <div class="row">
+                <div class="result-label">Tổng tiền hôm nay</div>
+                <div class="result-box blue-bg" id="totalToday">0</div>
+            </div>
+            <div class="row" style="margin-top: 20px; border-top: 1px dashed #e0e0e0; padding-top: 15px;">
+                <div class="result-label">Số tiền còn lại</div>
+                <div class="result-box gray-bg" id="remainingAmount">0</div>
+            </div>
+            <div class="error-message" id="errorMessage">Không đủ tiền tạm ứng</div>
+        </div>
+        
+        
+    </div>
+    
+    <button class="download-btn" onclick="downloadFile()" style="display:none !important;">Tải Bảng Kết Quả</button>
+
+    <script>
+
+    /* ===== AGE CALCULATOR SCRIPT (robust, UTC-safe) ===== */
+    function _parseDateInputUTC(v){
+      // v is "YYYY-MM-DD"
+      if(!v || v.length < 10) return null;
+      const y = parseInt(v.slice(0,4),10);
+      const m = parseInt(v.slice(5,7),10);
+      const d = parseInt(v.slice(8,10),10);
+      if(isNaN(y) || isNaN(m) || isNaN(d)) return null;
+      // Construct a Date at local midnight but compute using UTC-only helpers
+      return new Date(Date.UTC(y, m-1, d));
+    }
+    function _diffDaysUTC(aUTC, bLocal){
+      // Normalize 'b' to UTC date without time
+      const bUTC = Date.UTC(bLocal.getFullYear(), bLocal.getMonth(), bLocal.getDate());
+      const aMs = Date.UTC(aUTC.getUTCFullYear(), aUTC.getUTCMonth(), aUTC.getUTCDate());
+      const diff = Math.floor((bUTC - aMs) / 86400000);
+      return diff;
+    }
+    function _monthsDiffCalendarUTC(fromUTC, toLocal){
+      let months = (toLocal.getFullYear() - fromUTC.getUTCFullYear())*12 + (toLocal.getMonth() - fromUTC.getUTCMonth());
+      // adjust if day-of-month not reached
+      if (toLocal.getDate() < fromUTC.getUTCDate()) months -= 1;
+      return Math.max(0, months);
+    }
+    function __updateAgeFields(){
+      const dobEl = document.getElementById('dob');
+      const outD = document.getElementById('ageDays');
+      const outW = document.getElementById('ageWeeks');
+      const outM = document.getElementById('ageMonths');
+      const outY = document.getElementById('ageYears');
+      if(!dobEl || !outD || !outW || !outM || !outY) return;
+      
+      const v = dobEl.value; // should be "YYYY-MM-DD" regardless of locale display
+      const dobUTC = _parseDateInputUTC(v);
+      if(!dobUTC){ outD.value=''; outW.value=''; outM.value=''; outY.value=''; return; }
+      
+      const today = new Date();
+      const days = _diffDaysUTC(dobUTC, today);
+      if(days < 0){ outD.value=''; outW.value=''; outM.value=''; outY.value=''; return; }
+      
+      const weeks = Math.floor(days/7);
+      const months = _monthsDiffCalendarUTC(dobUTC, today);
+      const years = Math.floor(months / 12);
+      
+      outD.value = days.toString();
+      outW.value = weeks.toString();
+      outM.value = months.toString();
+      outY.value = years.toString();
+    }
+    /* ===== /AGE CALCULATOR SCRIPT (robust, UTC-safe) ===== */
+        function formatNumber(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            if (value) {
+                input.value = new Intl.NumberFormat('vi-VN').format(value);
+            }
+        }
+
+        function calculate() {
+            const depositAmount = parseFloat(document.getElementById('depositAmount').value.replace(/\./g, '')) || 0;
+
+            let totalInjected = 0;
+            const injectedItems = document.querySelectorAll('.injected-item');
+            injectedItems.forEach(item => {
+                totalInjected += parseFloat(item.value.replace(/\./g, '')) || 0;
+            });
+            document.getElementById('totalInjected').textContent = totalInjected.toLocaleString('vi-VN');
+
+            let totalToday = 0;
+            const todayItems = document.querySelectorAll('.today-item');
+            todayItems.forEach(item => {
+                totalToday += parseFloat(item.value.replace(/\./g, '')) || 0;
+            });
+            document.getElementById('totalToday').textContent = totalToday.toLocaleString('vi-VN');
+
+            const remainingAmount = depositAmount - totalInjected - totalToday - 1000000;
+            const remainingElement = document.getElementById('remainingAmount');
+            const errorMessageElement = document.getElementById('errorMessage');
+
+            if (remainingAmount < 0) {
+                remainingElement.textContent = remainingAmount.toLocaleString('vi-VN');
+                errorMessageElement.style.display = 'block';
+                remainingElement.style.backgroundColor = '#dc3545';
+                remainingElement.style.color = 'white';
+            } else {
+                remainingElement.textContent = remainingAmount.toLocaleString('vi-VN');
+                errorMessageElement.style.display = 'none';
+                remainingElement.style.backgroundColor = '#7f8c8d';
+                remainingElement.style.color = 'white';
+            }
+        }
+
+        function downloadFile() {
+            const htmlContent = `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả tính tiền</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; color: #333; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            max-width: 600px; 
+            margin: 20px auto; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            border-radius: 8px; 
+            overflow: hidden;
+        }
+        th, td { 
+            border: 1px solid #e0e0e0; 
+            padding: 12px 15px; 
+            text-align: right; 
+            font-size: 1.05em;
+        }
+        th { 
+            background-color: #e9ecef; 
+            text-align: left; 
+            font-weight: 600; 
+            color: #495057;
+        }
+        .yellow-bg { background-color: #fffacd; }
+        .brown-bg { background-color: #a0522d; color: white; }
+        .blue-bg { background-color: #6daee2; }
+        .gray-bg { background-color: #7f8c8d; color: white; }
+        .red-bg { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <h2>Bảng Kết Quả Tính Tiền Mũi Tiêm</h2>
+    <table>
+        <tr>
+            <th colspan="2">Số tiền cọc ban đầu</th>
+            <td class="yellow-bg">${document.getElementById('depositAmount').value}</td>
+        </tr>
+        <tr>
+            <th colspan="2">Tổng tiền đã tiêm</th>
+            <td class="brown-bg">${document.getElementById('totalInjected').textContent}</td>
+        </tr>
+        <tr>
+            <th colspan="2">Tổng tiền hôm nay tiêm</th>
+            <td class="blue-bg">${document.getElementById('totalToday').textContent}</td>
+        </tr>
+        <tr>
+            <th colspan="2">Số tiền còn lại</th>
+            <td class="${parseFloat(document.getElementById('remainingAmount').textContent.replace(/\./g, '').replace(/,/g, '')) < 0 ? 'red-bg' : 'gray-bg'}">${document.getElementById('remainingAmount').textContent}</td>
+        </tr>
+    </table>
+
+/* ===== AGE CALCULATOR SCRIPT ===== */
+function __diffDaysUTC(a, b){
+  const ms = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) -
+             Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+  return Math.floor(ms / 86400000);
+}
+function __monthsDiffCalendar(from, to){
+  let months = (to.getFullYear() - from.getFullYear())*12 + (to.getMonth() - from.getMonth());
+  if (to.getDate() < from.getDate()) months -= 1;
+  return Math.max(0, months);
+}
+function __updateAgeFields(){
+  const dob = document.getElementById('dob');
+  const outD = document.getElementById('ageDays');
+  const outW = document.getElementById('ageWeeks');
+  const outM = document.getElementById('ageMonths');
+  const outY = document.getElementById('ageYears');
+
+  if(!dob || !outD || !outW || !outM || !outY) return;
+
+  const v = dob.value;
+  if(!v){ outD.value=''; outW.value=''; outM.value=''; outY.value=''; return; }
+
+  const d = new Date(v);
+  if(isNaN(d.getTime())){ outD.value=''; outW.value=''; outM.value=''; outY.value=''; return; }
+
+  const today = new Date();
+  const days = __diffDaysUTC(d, today);
+  if(days < 0){ outD.value=''; outW.value=''; outM.value=''; outY.value=''; return; }
+
+  const weeks = Math.floor(days/7);
+  const months = __monthsDiffCalendar(d, today);
+  const years = Math.floor(months / 12);
+
+  outD.value = days + ' ngày';
+  outW.value = weeks + ' tuần';
+  outM.value = months + ' tháng';
+  outY.value = years + ' tuổi';
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const dobEl = document.getElementById('dob');
+  if(dobEl){
+    dobEl.addEventListener('input', __updateAgeFields);
+    __updateAgeFields();
+  }
+});
+/* ===== /AGE CALCULATOR SCRIPT ===== */
+
+
+<!-- ===== Popup Thông báo ===== -->
+<div id="alertModal" class="modal">
+  <div class="modal-content">
+    <p>❗ Không đủ tiền tạm ứng! Vui lòng kiểm tra lại.</p>
+    <button onclick="closeModal()">Đóng</button>
+  </div>
+</div>
+
+
+/* ===== Modal Script ===== */
+function showModal() {
+  document.getElementById('alertModal').style.display = 'block';
+}
+function closeModal() {
+  document.getElementById('alertModal').style.display = 'none';
+}
+
+// Hook into calculation: whenever tam ung > con lai, show modal
+function checkTamUng(soTienConLai, tienTamUng) {
+  if (tienTamUng > soTienConLai) {
+    showModal();
+    return false;
+  }
+  return true;
+}
+/* ===== /Modal Script ===== */
+
+</body>
+</html>`;
+
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ket_qua_tinh_tien.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        window.onload = () => {
+            const dobEl = document.getElementById('dob');
+            if(dobEl){ dobEl.addEventListener('input', __updateAgeFields); __updateAgeFields(); }
+            
+            document.querySelectorAll('input').forEach(input => formatNumber(input));
+            calculate();
+        };
+    </script>
+
+</body>
+</html>
